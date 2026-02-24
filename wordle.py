@@ -4,6 +4,7 @@ from time import sleep
 from enum import Enum
 import argparse
 from functools import reduce
+import logging
 
 def game_pause():
     sleep(Settings.GAME_PAUSE.value)
@@ -61,7 +62,10 @@ def draw_screen():
     print("End of holding")
 
 
-def wordle_game(n_players=1):
+def wordle_game(n_players=1, LOG=None, ):
+    # System setup
+    LOG = logging.getLogger(__name__)
+
     # Game setup
     playergroup = PlayerGroup()
     playergroup.setup_singleplayer("Karl Johan")
@@ -71,6 +75,7 @@ def wordle_game(n_players=1):
     stop_play = False
     while not stop_play:
         try:
+            LOG.debug("Loop initiation")
             draw_screen()
             game_pause()
             playergroup.list_players()
