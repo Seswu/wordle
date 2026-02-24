@@ -1,6 +1,9 @@
 # Emacs-generated backup file
 *~
 
+# Log-generated core dump file
+core.dump
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
