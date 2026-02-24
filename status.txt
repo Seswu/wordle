@@ -1,0 +1,2 @@
+Split program into call/runner and main game loop; better division of test, logging and system-associated code from the actual game.
+Untested but well the idea is to figure out testing, logging and those system calls once more.

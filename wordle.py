@@ -61,33 +61,28 @@ def draw_screen():
     print("End of holding")
 
 
-# Argument parsing
-parser = argparse.ArgumentParser(description='A program for playing wordle.')
-parser.add_argument('--players', type=int, default=1)
-args = parser.parse_args()
+def wordle_game(n_players=1):
+    # Game setup
+    playergroup = PlayerGroup()
+    playergroup.setup_singleplayer("Karl Johan")
 
 
-# Game setup
-playergroup = PlayerGroup()
-playergroup.setup_singleplayer("Karl Johan")
+    # Main game event loop
+    stop_play = False
+    while not stop_play:
+        try:
+            draw_screen()
+            game_pause()
+            playergroup.list_players()
+            #raise Exception('State out of bounds')
+            input("Press return")
 
-
-# Main game event loop
-stop_play = False
-while not stop_play:
-    try:
-        draw_screen()
-        game_pause()
-        playergroup.list_players()
-        #raise Exception('State out of bounds')
-        input("Press return")
-
-    except KeyboardInterrupt as kint:
-        print('\nOkay, quitting now.')
-        stop_play = True
-    except Exception as exc:
-        print('Something went wrong.')
-        print(repr(exc))
-        print('Program will stop.')
-        raise exc
-        break
+        except KeyboardInterrupt as kint:
+            print('\nOkay, quitting now.')
+            stop_play = True
+        except Exception as exc:
+            print('Something went wrong.')
+            print(repr(exc))
+            print('Program will stop.')
+            raise exc
+            break
