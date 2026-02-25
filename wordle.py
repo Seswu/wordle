@@ -6,8 +6,6 @@ import random
 from itertools import count
 from time import sleep
 from enum import Enum
-import argparse
-from functools import reduce
 import logging
 
 def game_pause():
@@ -30,9 +28,33 @@ class Player:
     _ids = count(0)
 
     def __init__(self, name):
-        self.guesses = 6
+        """
+        Initializes player data
+        """
+        self.guesses = []
         self.name = name
         self.id = next(self._ids)
+
+    def get_name(self):
+        """
+        Returns player name
+        """
+        return self.name
+
+    def get_id(self):
+        """
+        Returns id number of player
+        """
+        return self.id
+
+    def add_guess(self, guess=None):
+        if guess == None:
+            raise Exception("No guess supplied")
+        self.guesses.append(guess)
+
+    def print_guesses(self):
+        for guess in self.guesses:
+            print(guess)
 
 class PlayerGroup:
     """
@@ -52,6 +74,9 @@ class PlayerGroup:
         self.players.extend(players)
 
     def setup_singleplayer(self, player_name):
+        """
+        Setup function for the single-player case
+        """
         player = Player(player_name)
         self.add_players([player])
         self.list_players()
@@ -62,7 +87,6 @@ class PlayerGroup:
         """
         players = [ Player(player_name) for player_name in player_names ]
         self.add_players( players )
-        self.reset_places()
         self.list_players()
 
     def list_players(self):
@@ -74,41 +98,58 @@ class PlayerGroup:
             i += 1
             print(f'Player {i}: {player.name}')    # % (i, player.name))
 
-def draw_screen():
+def draw_screen(playergroup):
     """
-    Convenience function to standize calls to display current game information; main interface output
+    Convenience function to standize calls to display current game information
     """
-    print("Screen placeholder")
-    print()
-    print()
-    print()
-    print("End of holding")
-
+    cur_player = playergroup.players[0]
+    print(f"Players:")
+    playergroup.list_players()
+    print(f"Current player: {cur_player.get_name()}")
+    for guess in cur_player.guesses:
+        print(guess)
 
 def wordle_game(n_players=1):
     """
     Function that starts and runs game
     """
+
     # System setup
     log = logging.getLogger(__name__)
+    random.seed(9) # Working with fixed randomness while developing
 
     # Game setup
     playergroup = PlayerGroup()
+    valid_guesses = None
+    answer = None
+
     if n_players == 1:
         playergroup.setup_singleplayer("Karl Johan")
     else:
         pass
 
+    with open('wordle-words.txt') as f:
+        lines = f.readlines()
+        valid_guesses = lines
 
     # Main game event loop
     stop_play = False
+    answer = random.choice(valid_guesses)
     while not stop_play:
         try:
             log.debug("Loop initiation")
-            draw_screen()
+            draw_screen(playergroup)
             game_pause()
-            playergroup.list_players()
-            input("Press return")
+            guess = input("Your guess?")
+            if not len(guess == 5):
+                raise Exception("Incorrect number of letters")
+            if not guess.isalpha():
+                raise Exception("Non-letters used while guessing")
+            guess = guess.lower()
+            if not guess in valid_guesses:
+                raise Exception("Invalid word")
+            for letter in guess:
+                pass
 
         except KeyboardInterrupt:
             print('\nOkay, quitting now.')
@@ -118,4 +159,4 @@ def wordle_game(n_players=1):
             print(repr(exc))
             print('Program will stop.')
             raise exc
-            break
+            #break
