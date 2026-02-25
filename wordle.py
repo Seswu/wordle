@@ -7,6 +7,8 @@ from itertools import count
 from time import sleep
 from enum import Enum
 import logging
+from functools import filter, map, reduce
+from termcolor import colored
 
 def game_pause():
     """
@@ -98,6 +100,59 @@ class PlayerGroup:
             i += 1
             print(f'Player {i}: {player.name}')    # % (i, player.name))
 
+class Evaluator:
+    """
+    Hold the answer and validate guesses against it
+    """
+
+    def __init__(self):
+        self.answer = []
+        for i in range(5):
+            self.answer.append({ letter:'', taken: False })
+
+    def set_answer(self, answer):
+        self.answer = []
+        for i in range(5):
+            self.answer.append({ letter: answer[i], taken: False })
+
+    def evaluate_guess(self, guess):
+        result = []
+        for i in range(5):
+            if guess[i] == self.answer[i].letter:
+                self.answer[i].taken = True
+                self.result.append({ in_pos: True, present = True })
+            else:
+                self.result.append({ inpos: False, present = False })
+        for i in range(5):
+            for j in range(5):
+                if not self.answer[j].taken:
+                    if guess[i] == self.answer[j].letter:
+                        self.answer[j].taken = True
+                        self.result[i].present = True
+
+class ResultBoard:
+    """
+    Board for storing and displaying guesses and the results of their evaluation
+    """
+    def __init__(self):
+        self.guesses = []
+
+    def add_evaluation(self, guess, evaluation):
+        entry = evaluation
+        for i in range(5):
+            entry[i].guessed = guess[i]
+        guesses.append(entry)
+
+    def nb_guesses(self):
+        return len(self.guesses)
+
+    def print_results(self):
+        for guess in self.guesses:
+            line = ""
+            for i in range(5):
+                letter = guess[i].letter
+                if guess[i].
+
 def draw_screen(playergroup):
     """
     Convenience function to standize calls to display current game information
@@ -122,6 +177,7 @@ def wordle_game(n_players=1):
     playergroup = PlayerGroup()
     valid_guesses = None
     answer = None
+    evaluator = Evaluator()
 
     if n_players == 1:
         playergroup.setup_singleplayer("Karl Johan")
@@ -141,6 +197,7 @@ def wordle_game(n_players=1):
             draw_screen(playergroup)
             game_pause()
             guess = input("Your guess?")
+
             if not len(guess == 5):
                 raise Exception("Incorrect number of letters")
             if not guess.isalpha():
@@ -148,7 +205,9 @@ def wordle_game(n_players=1):
             guess = guess.lower()
             if not guess in valid_guesses:
                 raise Exception("Invalid word")
-            for letter in guess:
+
+            evaluator.set_answer(answer)
+            result = evaluator.evaluate_guess(guess)
                 pass
 
         except KeyboardInterrupt:
