@@ -7,7 +7,7 @@ from itertools import count
 from time import sleep
 from enum import Enum
 import logging
-from functools import filter, map, reduce
+#from functools import filter, map, reduce
 from termcolor import colored
 
 def game_pause():
@@ -107,28 +107,32 @@ class Evaluator:
 
     def __init__(self):
         self.answer = []
+        init_dict = {}
+        init_dict['letter']  = ''
+        init_dict['taken'] = False
         for i in range(5):
-            self.answer.append({ letter:'', taken: False })
+            self.answer.append( init_dict )
 
     def set_answer(self, answer):
         self.answer = []
         for i in range(5):
-            self.answer.append({ letter: answer[i], taken: False })
+            self.answer.append({ 'letter': answer[i], 'taken': False })
 
     def evaluate_guess(self, guess):
         result = []
         for i in range(5):
-            if guess[i] == self.answer[i].letter:
-                self.answer[i].taken = True
-                self.result.append({ in_pos: True, present = True })
+            if guess[i] == self.answer[i]['letter']:
+                self.answer[i]['taken'] = True
+                result.append({ 'in_pos': True, 'present': True })
             else:
-                self.result.append({ inpos: False, present = False })
+                result.append({ 'in_pos': False, 'present': False })
         for i in range(5):
             for j in range(5):
-                if not self.answer[j].taken:
-                    if guess[i] == self.answer[j].letter:
-                        self.answer[j].taken = True
-                        self.result[i].present = True
+                if not self.answer[j]['taken']:
+                    if guess[i] == self.answer[j]['letter']:
+                        self.answer[j]['taken'] = True
+                        result[i]['present'] = True
+        return result
 
 class ResultBoard:
     """
@@ -140,8 +144,8 @@ class ResultBoard:
     def add_evaluation(self, guess, evaluation):
         entry = evaluation
         for i in range(5):
-            entry[i].guessed = guess[i]
-        guesses.append(entry)
+            entry[i]['guessed'] = guess[i]
+        self.guesses.append(entry)
 
     def nb_guesses(self):
         return len(self.guesses)
@@ -151,9 +155,14 @@ class ResultBoard:
             line = ""
             for i in range(5):
                 letter = guess[i].letter
-                if guess[i].
+                if guess[i].present:
+                    letter = coloured(letter, 'yellow')
+                if guess[i].in_pos:
+                    letter = coloured(letter, 'green')
+                line.append(letter)
+            print(line)
 
-def draw_screen(playergroup):
+def draw_screen(playergroup, resultboard):
     """
     Convenience function to standize calls to display current game information
     """
@@ -161,8 +170,7 @@ def draw_screen(playergroup):
     print(f"Players:")
     playergroup.list_players()
     print(f"Current player: {cur_player.get_name()}")
-    for guess in cur_player.guesses:
-        print(guess)
+    resultboard.print_results()
 
 def wordle_game(n_players=1):
     """
@@ -175,9 +183,10 @@ def wordle_game(n_players=1):
 
     # Game setup
     playergroup = PlayerGroup()
-    valid_guesses = None
+    valid_guesses = []
     answer = None
     evaluator = Evaluator()
+    resultboard = ResultBoard()
 
     if n_players == 1:
         playergroup.setup_singleplayer("Karl Johan")
@@ -186,7 +195,10 @@ def wordle_game(n_players=1):
 
     with open('wordle-words.txt') as f:
         lines = f.readlines()
-        valid_guesses = lines
+        for line in lines:
+            log.debug( f'Read line: {repr(line)}' )
+            log.debug( f'Appending: {repr(line[0:5])}' )
+            valid_guesses.append( line[0:5] )
 
     # Main game event loop
     stop_play = False
@@ -194,21 +206,23 @@ def wordle_game(n_players=1):
     while not stop_play:
         try:
             log.debug("Loop initiation")
-            draw_screen(playergroup)
+            draw_screen(playergroup, resultboard)
             game_pause()
-            guess = input("Your guess?")
+            guess = input("Your guess? ")
 
-            if not len(guess == 5):
+            if not len(guess) == 5:
                 raise Exception("Incorrect number of letters")
             if not guess.isalpha():
                 raise Exception("Non-letters used while guessing")
             guess = guess.lower()
             if not guess in valid_guesses:
+                log.info('invalid guess')
+                log.info(f'guess made: { repr(guess) }')
                 raise Exception("Invalid word")
 
             evaluator.set_answer(answer)
             result = evaluator.evaluate_guess(guess)
-                pass
+            resultboard.add_evaluation(guess, result)
 
         except KeyboardInterrupt:
             print('\nOkay, quitting now.')
