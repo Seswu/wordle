@@ -7,7 +7,6 @@ from itertools import count
 from time import sleep
 from enum import Enum
 import logging
-#from functools import filter, map, reduce
 
 # System setup
 log = logging.getLogger(__name__)
@@ -25,6 +24,17 @@ class Settings(Enum):
     """
     GAME_PAUSE = 0.2
     # DATABASE = "xx.db"
+
+class GameError(Exception):
+    """
+    Exception raised for unexpected occurences during play,
+    such as player input not meeting requirements.
+    Most of these can be handled in game - those that cannot
+    are re-raised.
+    """
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
 
 class Player:
     """
@@ -170,14 +180,12 @@ class ResultBoard:
             line = ""
             for i in range(5):
                 guessed_letter = guess[i]['guessed']
-                #guessed_letter = self.colour_default(guess[i]['guessed'])
                 log.debug(f'{guessed_letter} \
                 Present: {guess[i]['present']} Positioned: {guess[i]['in_pos']}')
                 if guess[i]['in_pos']:
                     guessed_letter = self.colour_in_position(guessed_letter)
                 elif guess[i]['present']:
                     guessed_letter = self.colour_present(guessed_letter)
-                print(guessed_letter)
                 line = line + guessed_letter
             print(line)
 
@@ -190,6 +198,7 @@ def draw_screen(playergroup, resultboard):
     playergroup.list_players()
     print(f"Current player: {cur_player.get_name()}")
     resultboard.print_results()
+    print()
 
 def wordle_game(n_players=1):
     """
@@ -226,27 +235,33 @@ def wordle_game(n_players=1):
             draw_screen(playergroup, resultboard)
             game_pause()
             guess = input("Your guess? ")
+            game_pause()
 
             if not len(guess) == 5:
-                raise Exception("Incorrect number of letters")
+                raise GameError("Incorrect number of letters")
             if not guess.isalpha():
-                raise Exception("Non-letters used while guessing")
+                raise GameError("Non-letters used while guessing")
             guess = guess.lower()
             if not guess in valid_guesses:
                 log.info('invalid guess')
                 log.info(f'guess made: { repr(guess) }')
-                raise Exception("Invalid word")
+                raise GameError("Invalid word")
 
             evaluator.set_answer(answer)
             result = evaluator.evaluate_guess(guess)
             resultboard.add_evaluation(guess, result)
 
+        except GameError as ge:
+            print(ge)
+            print()
+            game_pause()
         except KeyboardInterrupt:
             print('\nOkay, quitting now.')
+            game_pause()
             stop_play = True
         except Exception as exc:
             print('Something went wrong.')
             print(repr(exc))
             print('Program will stop.')
+            game_pause()
             raise exc
-            #break
