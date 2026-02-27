@@ -12,19 +12,19 @@ The essential game works, although many nice features like winning streak were n
 Use Python3.
 Install required modules with
 
-```
+```bash
 pip3 install -r requirements.txt
 ```
 
 If you feel like it, to protect your system environment against newfangled python versions, install to a virtual environment using
 
-```
+```bash
 python3 -m venv wordle
 ```
 
 to create the environment, and
 
-```
+```bash
 source ./wordle/bin/activate
 ```
 
