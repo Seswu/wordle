@@ -4,6 +4,9 @@
 # Emacs-nox-generated backup file
 \#*\#
 
+# Marp-generated pdfs
+*.pdf
+
 # Log-generated core dump file
 core.dump
 
