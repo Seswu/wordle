@@ -1,5 +1,5 @@
 # wordle
-### ### A wordle-clone for a console near you
+##### A wordle-clone for a console near you
 
 ## Description
 
