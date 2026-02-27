@@ -33,4 +33,6 @@ to activate the environment.
 ## Presentation
 
 The presentation detailing the development process was made in markdown and is intended to be built with [marp-cli](https://github.com/marp-team/marp-cli).  
+(standalone binaries are available)
+
 Doing so will yield ie a pdf file with presentation slides.
